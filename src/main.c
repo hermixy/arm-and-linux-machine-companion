@@ -65,6 +65,7 @@
 uint8_t Screen;									//画面编号
 uint8_t	Count;
 uint8_t camera_show_flag = 0;
+uint8_t wait_load_flag = 0;
 int		my_get_touch_return;
 
 typedef struct DOUBELNODE{
@@ -380,8 +381,9 @@ static void AppTaskTouch(void )
 								SM |= 0x03<<16;	
 								break;
 						case	2:					//“返回”按钮
-								SM = 0x01<<24;
-								SM |= 0x01<<16;							
+								SM = 0x2f<<24;
+								SM |= 0x01<<16;	
+								music_start_stop_flag = 0;						
 								break;
 						case	3:					//“暂停/播放”按钮
 								if(music_start_stop_flag == 0)
@@ -396,7 +398,7 @@ static void AppTaskTouch(void )
 									SM |= 0x03<<16;	
 									music_start_stop_flag = 2;
 								}		
-								else if(music_start_stop_flag == 2)//停止播放
+								else if(music_start_stop_flag == 2)//停止
 								{
 									SM = 0x2c<<24;
 									SM |= 0x03<<16;		
@@ -784,16 +786,26 @@ static void	AppTaskDisplay(void )
 
 														//音乐界面预留
 			case	0x2a:								//音乐播放	
-					memset(music_cmd,0,sizeof(music_cmd));			
-					system("killall -9 madplay");					
-					sprintf(music_cmd,"madplay  /root/*.mp3 -r &");
-					system(music_cmd);							
+					//system("killall -9 madplay");									
+					if(music_head == music_list)
+					{
+						music_head = music_head->Pnext;
+					}	
+					memset(music_cmd,0,sizeof(music_cmd));
+					sprintf(music_cmd,"madplay %s/%s -r &",music_path,music_head->data);									
+					system(music_cmd);	
+					show_cartoon();		
+					lcd_draw_jpg(0,0,"./music.jpg");															
 					break;	
-			case	0x2b:								//音乐继续	
-					system("killall -CONT madplay &"); 		
+			case	0x2b:								//音乐继续
+					system("killall -CONT madplay &"); 	
+					show_cartoon();	
+					lcd_draw_jpg(0,0,"./music.jpg");											
 					break;
 			case	0x2c:								//音乐停止
-					system("killall -STOP madplay &");					
+					system("killall -STOP madplay &");		
+					show_cartoon();	
+					lcd_draw_jpg(0,0,"./music.jpg");												
 					break;					
 			case	0x2d:								//上一曲						
 					system("killall -9 madplay");
@@ -803,7 +815,7 @@ static void	AppTaskDisplay(void )
 						music_head = music_head->Pprev;
 					}						
 					memset(music_cmd,0,sizeof(music_cmd));
-					sprintf(music_cmd,"madplay %s/%s &",music_path,music_head->data);
+					sprintf(music_cmd,"madplay %s/%s -r &",music_path,music_head->data);
 					system(music_cmd);
 					break;
 			case	0x2e:								//下一曲				
@@ -814,11 +826,12 @@ static void	AppTaskDisplay(void )
 						music_head = music_head->Pnext;
 					}					
 					memset(music_cmd,0,sizeof(music_cmd));
-					sprintf(music_cmd,"madplay %s/%s &",music_path,music_head->data);
+					sprintf(music_cmd,"madplay %s/%s -r &",music_path,music_head->data);
 					system(music_cmd);					
 					break;					
-			case	0x2f:								//
-					
+			case	0x2f:								//退出
+					Screen = (SM>>16&0xff);				//保存新的画面编号
+					NewScree();							//显示新的画面					
 					break;		
 
 
@@ -845,6 +858,7 @@ static void	AppTaskDisplay(void )
 			case	0x4a:								//视频播放预留
 				//	lcd_draw_jpg(0,0,"./video.jpg");
 				//	system("killall -SIGKILL madplay");
+					system("killall -9 madplay");		//关音乐
 					memset(video_cmd,0,sizeof(video_cmd));
 					if(video_head == video_list)
 					{
@@ -1000,6 +1014,10 @@ static void	AppTaskDisplay(void )
 					// 打开触摸屏
 					//ts_open();
 					//open_fb0();
+					while(wait_load_flag)				//等待加载
+					{
+						;
+					}
 					err = ts_getxy(&X, &Y);
 					if(err == 1)
 					{
@@ -1190,13 +1208,17 @@ void pthread_clean_up(void *arg)
 
 void show_cartoon()//过场动画
 {
+	wait_load_flag = 1;
 	lcd_draw_jpg(0,0,"buffering1.jpg");
-	usleep(1000*50);
+	usleep(1000*10);
 	lcd_draw_jpg(0,0,"buffering2.jpg");
-	usleep(1000*50);
+	usleep(1000*10);
 	lcd_draw_jpg(0,0,"buffering3.jpg");
-	usleep(1000*50);
+	usleep(1000*10);
 	lcd_draw_jpg(0,0,"buffering4.jpg");
+	usleep(1000*10);
+	lcd_draw_jpg(0,0,"buffering1.jpg");
+	wait_load_flag = 0;
 }
 
 //初始化链表
