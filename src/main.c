@@ -786,7 +786,7 @@ static void	AppTaskDisplay(void )
 
 														//音乐界面预留
 			case	0x2a:								//音乐播放	
-					//system("killall -9 madplay");									
+					system("killall -9 madplay");									
 					if(music_head == music_list)
 					{
 						music_head = music_head->Pnext;
@@ -856,9 +856,8 @@ static void	AppTaskDisplay(void )
 
 
 			case	0x4a:								//视频播放预留
-				//	lcd_draw_jpg(0,0,"./video.jpg");
-				//	system("killall -SIGKILL madplay");
-					system("killall -9 madplay");		//关音乐
+				//	lcd_draw_jpg(0,0,"./video.jpg");	
+					system("killall -STOP madplay &");	//关音乐
 					memset(video_cmd,0,sizeof(video_cmd));
 					if(video_head == video_list)
 					{
