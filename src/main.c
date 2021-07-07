@@ -42,6 +42,7 @@
 #include "lcd.h"
 #include "ts.h"		
 #include "camera.h"
+#include "socket.h"
 
 /*
 *********************************************************************************************************
@@ -106,10 +107,10 @@ int16_t	ScreenKey3[5][4] = {			//"音频"画面的按钮表
 };
 
 int16_t	ScreenKey4[5][4] = {			//"录音"画面的按钮表
-							{0,0,0,0},		//键码0：开始
-							{0,0,0,0},		//键码1：暂停
+							{295,301,355,357},		//键码0：开始
+							{396,302,453,355},		//键码1：暂停
 							{650,0,779,100},		//键码2：返回
-							{0,0,0,0},			//键码3：结束	
+							{500,297,559,355},		//键码3：结束	
 							{0,0,799,479}			//键码4：全屏范围选择（不做处理，为default状态）
 };
 
@@ -414,6 +415,8 @@ static void AppTaskTouch(void )
 					switch(KEY)						//按键码分别处理
 					{
 						case	0:					//“开始”按钮
+								SM = 0x3a<<24;
+								SM |= 0x04<<16;									
 								break;
 						case	1:					//“暂停”按钮													
 								break;
@@ -433,11 +436,11 @@ static void AppTaskTouch(void )
 					{
 						case	0:					//“上一个视频”按钮
 								SM = 0x41<<24;
-								SM |= 0x03<<16;							
+								SM |= 0x05<<16;							
 								break;
 						case	1:					//“下一个视频”按钮	
 								SM = 0x42<<24;
-								SM |= 0x03<<16;																			
+								SM |= 0x05<<16;																			
 								break;
 						case	2:					//“返回”按钮
 								SM = 0x4d<<24;
@@ -446,29 +449,29 @@ static void AppTaskTouch(void )
 								break;
 						case	3:					//“快进”按钮	
 								SM = 0x4e<<24;
-								SM |= 0x03<<16;									
+								SM |= 0x05<<16;									
 								break;
 						case	4:					//“回退”按钮
 								SM = 0x4f<<24;
-								SM |= 0x03<<16;	
+								SM |= 0x05<<16;	
 								break;
 						case	5:					//“播放”按钮
 								if(video_start_stop_flag == 0)//播放
 								{
 									SM = 0x4a<<24;
-									SM |= 0x03<<16;	
+									SM |= 0x05<<16;	
 									video_start_stop_flag = 2;									
 								}
 								else if(video_start_stop_flag == 1)//播放
 								{
 									SM = 0x4b<<24;
-									SM |= 0x03<<16;	
+									SM |= 0x05<<16;	
 									video_start_stop_flag = 2;
 								}		
 								else if(video_start_stop_flag == 2)//停止播放
 								{
 									SM = 0x4c<<24;
-									SM |= 0x03<<16;		
+									SM |= 0x05<<16;		
 									video_start_stop_flag = 1;								
 								}						
 								break;								
@@ -506,12 +509,12 @@ static void AppTaskTouch(void )
 						case	0:					//“上一张”
 								printf("photo 0\n");
 								SM = 0x1a<<24;
-								SM |= 0x02<<16;	
+								SM |= 0x07<<16;	
 								break;
 						case	1:					//“下一张”			
 								printf("photo 1\n");			
 								SM = 0x1b<<24;
-								SM |= 0x02<<16;	
+								SM |= 0x07<<16;	
 								break;
 						case	2:					//“返回”
 								SM = 0X6a<<24;		//“显示相机”命令码
@@ -521,17 +524,17 @@ static void AppTaskTouch(void )
 						case	3:					//“第一张”
 								printf("photo 3\n");
 								SM = 0x1c<<24;
-								SM |= 0x02<<16;									
+								SM |= 0x07<<16;									
 								break;
 						case	4:					//“第二张”			
 								printf("photo 4\n");
 								SM = 0x1d<<24;
-								SM |= 0x02<<16;																									
+								SM |= 0x07<<16;																									
 								break;
 						case	5:					//“第三张”
 								printf("photo 5\n");
 								SM = 0x1e<<24;
-								SM |= 0x02<<16;								
+								SM |= 0x07<<16;								
 								break;							
 						default:
 								printf("photo default\n");
@@ -849,9 +852,9 @@ static void	AppTaskDisplay(void )
 					NewScree();							//显示新的画面					
 					break;		
 
+														//录音机界面预留
+			case	0x3a:								//录音开始
 
-			case	0x3a:								//录音机界面预留
-			
 					break;
 			case	0x3b:								//		
 
@@ -1256,6 +1259,42 @@ void *MyGetTouch(void *arg)
 			pthread_exit((void *)2);
 			pthread_cleanup_pop(0);
 		}		
+	}
+}
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+*                                                  后台获取客户端连接状态线程
+------------------------------------------------------------------------------------------------------------------------
+*/
+void *recv_client_data(void *arg)
+{
+	char rec_rslt[1024] = {0};
+	
+	while(1)
+	{
+		// 接收客户端发过来的消息
+		socket_recv_ack(rec_rslt, sizeof(rec_rslt));
+		
+		
+		if(face_flag == 0)
+		{
+			if(strstr(rec_rslt, "打开相册")) // 如果收到了打开相册
+			{
+				//printf("rec_rslt = %s\n", rec_rslt);
+				face_flag = 1;
+				pic_flag = 0;
+			}
+		}
+		
+		if(strstr(rec_rslt, "上一张"))
+		{
+			//printf("rec_rslt = %s\n", rec_rslt);
+			face_flag = 1;
+			pic_flag = 0;
+		}
+		
+		
 	}
 }
 
