@@ -125,7 +125,7 @@ int16_t	ScreenKey5[7][4] = {			//"视频"画面的按钮表
 
 int16_t	ScreenKey6[4][4] = {			//"相机"画面的按钮表
 							{700,350,779,480},		//键码0：相册
-							{0,0,0,0},		//键码1：拍照
+							{660,201,795,280},		//键码1：拍照
 							{650,0,779,150},		//键码2：返回
 							{0,0,799,479}			//键码3：全屏范围选择（不做处理，为default状态）
 };
@@ -485,8 +485,8 @@ static void AppTaskTouch(void )
 
 								break;
 						case	1:					//“拍照”按钮
-								//SM = 0x6b<<24;
-								//SM |= 0x01<<16;																						
+								SM = 0x6b<<24;
+								SM |= 0x06<<16;																						
 								break;
 						case	2:					//“返回”按钮
 								SM = 0x01<<24;
@@ -568,7 +568,18 @@ static void	AppTaskDisplay(void )
 	static uint8_t i = 0;
 	char music_cmd[50]={0};	
 	char photo_cmd[50]={0};		
-	char video_cmd[50]={0};		
+	char video_cmd[50]={0};	
+	/*
+	**拍照显示相关声明
+	*/
+	char camera_jpg_name[50]={0};		
+	char *cemera_photo_path = "/root/photo";
+	char camera_jpg_cmd[50]={0};	
+	struct jpg_data video_buf;	
+	static int camera_photo_count = 0;		
+	int tmp_fd = -1; 
+	/*
+	*/	
 	uint32_t	SM = 0;										//短消息
 	int			err;										//触摸屏幕函数返回值接收
 	int 		display_send_qid;							//消息队列ID，根据此ID识别消息队列
@@ -946,6 +957,13 @@ static void	AppTaskDisplay(void )
 						Screen = 1;
 						my_get_touch_return = 0xff;
 					}
+					if(my_get_touch_return == 1)		//拍照
+					{
+						printf("there is my_get_touch_return\n");
+						//lcd_draw_jpg(0,0,"./photo.jpg");	
+						Screen = 6;
+						my_get_touch_return = 0x01;
+					}						
 					if(my_get_touch_return == 0)		//相册
 					{
 						printf("there is my_get_touch_return\n");
@@ -972,8 +990,49 @@ static void	AppTaskDisplay(void )
 					printf("display_send_msg0:%x\n",display_send_msg.msg_sm[0]);
 					printf("display_send_msg1:%x\n",display_send_msg.msg_sm[1]);						
 					break;
-			case	0x6b:								//		
+			case	0x6b:								//拍照
+					// 如果文件不存在就创建并打开	
+					memset(camera_jpg_cmd,0,sizeof(camera_jpg_cmd));
+					sprintf(camera_jpg_cmd,"%s/camera%d.jpg",cemera_photo_path,camera_photo_count);
+					tmp_fd = open(camera_jpg_cmd, O_RDWR|O_CREAT, 0777);
+					if(tmp_fd < 0)
+					{
+						printf("open tmp_fd fail!\n");
+					}
+					printf("tmp_fd = %d\n", tmp_fd);
+					
+					// 写入jpg数据
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+					
+					// printf("video_buf.jpg_size = %d\n", video_buf.jpg_size);
+					write(tmp_fd, video_buf.jpg_data, video_buf.jpg_size);
+					// 关闭图片文件
+					close(tmp_fd);
+					memset(camera_jpg_name,0,sizeof(camera_jpg_name));
+					sprintf(camera_jpg_name,"camera%d.jpg",camera_photo_count++);
+					P_DOUBLE_NODE camera_new = new_node(camera_jpg_name);	//创建新节点		
+					add_node(camera_new,photo_list);						//插入新节点
 
+					//lcd_draw_jpg(0,0,camera_jpg_cmd);
+					//while(ts_getxy(&X, &Y) == -1)
+					//{
+					//	;
+					//}
+					show_cartoon();
+					lcd_draw_jpg(639,0,"./camera.jpg");	
+					Screen = 1;
+					display_send_msg.msg_sm[0] = 0xff000000 + 4;
+					display_send_msg.msg_sm[1] = Screen;
+					if((msgsnd(display_send_qid,&display_send_msg,send_length,0)) < 0)
+					{
+						printf("display_send message posted\n");
+						exit(1);
+					}				
 					break;
 			case	0x6c:								//
 	
@@ -1090,7 +1149,7 @@ void NewScree(void)
 		case	0x06:				//相机画面
 				//lcd_draw_jpg(0,0,"./camera.jpg");		
 				break; 	
-		case	0x07:				//相机画面
+		case	0x07:				//相机相册画面
 				lcd_draw_jpg(0,0,"./photo.jpg");	
 				break; 								
 		default	:  
@@ -1186,6 +1245,13 @@ void *MyGetTouch(void *arg)
 			pthread_cleanup_pop(0);
 		}
 		if(my_get_touch_return == 0)//相册
+		{
+			camera_show_flag = 1;	
+			pthread_cleanup_push(pthread_clean_up,"MyGetTouch");
+			pthread_exit((void *)2);
+			pthread_cleanup_pop(0);
+		}		
+		if(my_get_touch_return == 1)//拍照
 		{
 			camera_show_flag = 1;	
 			pthread_cleanup_push(pthread_clean_up,"MyGetTouch");
