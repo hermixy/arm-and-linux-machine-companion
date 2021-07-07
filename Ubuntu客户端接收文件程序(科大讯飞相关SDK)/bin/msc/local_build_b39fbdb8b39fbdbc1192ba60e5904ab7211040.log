@@ -1,0 +1,28 @@
+============================================================
+Time  2021/07/07 04:30:18 726 
+============================================================
+[2021/07/07 04:30:18 728] isr_local  2211 os_type is:  Linux  
+[2021/07/07 04:30:18 730] isr_local  2220 SYS_MSG_LOAD_LOCAL  
+[2021/07/07 04:30:18 733] isr_local  2249 SYS_MSG_REGCB_LOCAL| param0 =  msp_status_cb  
+[2021/07/07 04:30:18 740] isr_local  2249 SYS_MSG_REGCB_LOCAL| param0 =  build_grm_cb  
+[2021/07/07 04:30:18 744] isr_local  2262 ASR_LOCAL_MSG_BUILD_GRM  
+[2021/07/07 04:30:18 746] isr_local  1903 grm_init | params:  engine_type = local, 		asr_res_path = fo|res/asr/common.jet, sample_rate = 16000, 		grm_build_path = res/asr/GrmBuilld,   
+[2021/07/07 04:30:18 755] isr_local  805  engine_type  :  local  
+[2021/07/07 04:30:18 757] isr_local  805  asr_res_path  :  fo|res/asr/common.jet  
+[2021/07/07 04:30:18 758] isr_local  805  sample_rate  :  16000  
+[2021/07/07 04:30:18 759] isr_local  805  grm_build_path  :  res/asr/GrmBuilld  
+[2021/07/07 04:30:18 767] isr_local  1002 file count =   1  
+[2021/07/07 04:30:18 769] isr_local  925  file open type is:   fo  
+[2021/07/07 04:30:18 771] isr_local  958  res/asr/common.jet  0  0  
+[2021/07/07 04:30:18 772] isr_local  1020 speech_plus_setting  0  
+[2021/07/07 04:30:18 773] isr_local  1033 2  nil  res/asr/common.jet  0  0  
+[2021/07/07 04:30:18 779] isr_local  1035 res_ver  2  
+[2021/07/07 04:30:18 780] isr_local  1036 res 5  6b08cf1b68c811383d0a0ebad4f2c267  
+[2021/07/07 04:30:18 781] isr_local  1037 res_new_old_mark  v5pp  
+[2021/07/07 04:30:18 783] isr_local  1038 res_usr_name  ""  
+[2021/07/07 04:30:18 784] isr_local  1039 res_expires  1632640897  
+[2021/07/07 04:30:18 785] isr_local  1040 err  0  
+[2021/07/07 04:30:18 787] isr_local  1071 now expires:  1625657418  1632640897  
+[2021/07/07 04:30:18 807] isr_local  1644 proc_retcode_grm | errorcode =  0  
+[2021/07/07 04:30:18 866] isr_local  2022 grammar id:cmd  
+[2021/07/07 04:30:18 870] isr_local  1636 onGrmLocalServiceCb  0  cmd  

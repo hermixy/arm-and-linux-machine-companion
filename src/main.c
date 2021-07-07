@@ -11,7 +11,8 @@
 *
 * 更新记录:
 * ---------------
-*				-2021.6.29- V0.0.1代码模板初步搭建完成
+*				-2021.06.29- V0.0.1代码模板初步搭建完成
+*				-2021.07.07- V1.0.0代码基本功能完成
 *
 *
 *
@@ -57,7 +58,7 @@
 *********************************************************************************************************
 */
 //pthread_t TaskDisplayPthread;				//显示任务线程
-
+pthread_t recv_client_data_tid;				//后台获取客户端返回值线程
 /*
 *********************************************************************************************************
 *                                                全局变量定义
@@ -65,9 +66,11 @@
 */
 uint8_t Screen;									//画面编号
 uint8_t	Count;
-uint8_t camera_show_flag = 0;
-uint8_t wait_load_flag = 0;
-int		my_get_touch_return;
+uint8_t camera_show_flag = 0;					//相机等待后台坐标获取
+uint8_t wait_load_flag = 0;						//等待过渡动画完成标志位置
+uint8_t recv_client_data_flag = 0;				//录音等待抓换完成
+uint32_t recv_client_data_sm = 0;				//录音识别结果
+int		my_get_touch_return;					//相机后台坐标获取判断值
 
 typedef struct DOUBELNODE{
 	char *data;
@@ -151,6 +154,7 @@ int8_t	TouchKey(int16_t x,int16_t y);		//触摸屏坐标返回函数
 static void	AppTaskDisplay(void);			//显示任务
 static void AppTaskTouch(void);				//监控任务
 void *MyGetTouch(void *arg);				//后台获取线程坐标
+void *recv_client_data(void *arg);			//后台获取客户端是否接入并进行相应判断
 void pthread_clean_up(void *arg);			//工具函数，清理线程时调用
 void show_cartoon();
 P_DOUBLE_NODE list_init(char *new_data);
@@ -165,13 +169,19 @@ void add_node(P_DOUBLE_NODE new,P_DOUBLE_NODE list);
 */
 int main(void)
 {
+	// 启动服务器，等待客户端连接
+	socket_server_init(8888); // 初始化TCP服务器
+	socket_accept(); // 等待客户端连接	
 	// 创建线程
 	//	pthread_create(&TaskDisplayPthread, NULL, DisplayPthread, NULL);	
+	//pthread_create(&recv_client_data_tid, NULL, recv_client_data, NULL);
+		
 	pid_t result;	
 	result = fork();
 	ts_open();							// 打开触摸屏	
 	open_fb0();	
 	fifo_init();
+
 	if(result == -1)
 	{
 		printf("fork error\n");
@@ -322,10 +332,14 @@ static void AppTaskTouch(void )
 						case	4:					//相机
 								SM = 0X6a<<24;		//“显示相机”命令码
 								SM |= 0X06<<16;		//进入“相机”画面,更新屏幕编号
-								break;								
-						default:					//默认情况则是刷新背景
+								break;	
+						case    0xff:				//ff情况则是刷新背景
 								SM = 0x01<<24;
-								SM |= 0x01<<16;								
+								SM |= 0x01<<16;	
+								break;															
+						default:					//默认情况是录音					
+								SM = 0x3a<<24;
+								SM |= 0x04<<16;								
 								printf("bakcground default\n");
 								break;
 					}
@@ -854,7 +868,67 @@ static void	AppTaskDisplay(void )
 
 														//录音机界面预留
 			case	0x3a:								//录音开始
+					socket_send_file();
 
+					char rec_rslt[1024] = {0};
+					socket_recv_ack(rec_rslt, sizeof(rec_rslt));
+					
+					if(strstr(rec_rslt, "打开相册"))
+					{
+						recv_client_data_sm = 0X00<<24;				//更新KEY值
+						recv_client_data_sm |= 0X01<<16;			//更新屏幕编号	
+						printf("recv_client_data_sm = %x\n", recv_client_data_sm);		
+					}
+					else if(strstr(rec_rslt, "打开音乐"))
+					{
+						recv_client_data_sm = 0X01<<24;			
+						recv_client_data_sm |= 0X01<<16;				
+					}
+					else if(strstr(rec_rslt, "播放音乐"))
+					{		
+						recv_client_data_sm = 0X03<<24;				//更新KEY值
+						recv_client_data_sm |= 0X03<<16;			//更新屏幕编号	
+					}
+					else if(strstr(rec_rslt, "播放视频"))
+					{
+						recv_client_data_sm = 0X05<<24;			
+						recv_client_data_sm |= 0X05<<16;
+					}						
+					else if(strstr(rec_rslt, "打开视频"))
+					{
+						recv_client_data_sm = 0X03<<24;				
+						recv_client_data_sm |= 0X01<<16;					
+					}				
+					else if(strstr(rec_rslt, "打开相机"))
+					{
+						recv_client_data_sm = 0X04<<24;				
+						recv_client_data_sm |= 0X01<<16;					
+					}
+					else
+					{
+						printf("无效输入\n");
+					}		
+
+					usleep(1000*1000);
+					memset(display_recive_msg.msg_sm, 0, 16);		
+					if(msgrcv(display_recive_qid,(void *)&display_recive_msg,recv_length,(long)0,0) < 0)
+					{
+						printf("display_recive message error\n");
+						printf("%s\n", strerror(errno));
+						exit(1);
+					}				
+					display_send_msg.msg_sm[0] = 0xff000000 + (recv_client_data_sm>>24)&0xff;
+					display_send_msg.msg_sm[1] = (recv_client_data_sm>>16&0xff);
+					//Screen = display_send_msg.msg_sm[1];
+					//NewScree();
+					if((msgsnd(display_send_qid,&display_send_msg,send_length,0)) < 0)
+					{
+						printf("display_send message posted\n");
+						exit(1);
+					}
+					printf("display_send_msg0:%x\n",display_send_msg.msg_sm[0]);
+					printf("display_send_msg1:%x\n",display_send_msg.msg_sm[1]);	
+					recv_client_data_sm = 0;			
 					break;
 			case	0x3b:								//		
 
@@ -998,7 +1072,7 @@ static void	AppTaskDisplay(void )
 						lcd_draw_jpg(0,0,camera_jpg_cmd);
 						lcd_draw_jpg(639,0,"./camera.jpg");	
 
-						usleep(1000*4000);
+						usleep(1000*1500);
 	
 						Screen = 1;
 						my_get_touch_return = 0x04;
@@ -1273,28 +1347,49 @@ void *recv_client_data(void *arg)
 	
 	while(1)
 	{
-		// 接收客户端发过来的消息
+
+	/*	// 接收客户端发过来的消息
 		socket_recv_ack(rec_rslt, sizeof(rec_rslt));
 		
-		
-		if(face_flag == 0)
-		{
-			if(strstr(rec_rslt, "打开相册")) // 如果收到了打开相册
-			{
-				//printf("rec_rslt = %s\n", rec_rslt);
-				face_flag = 1;
-				pic_flag = 0;
-			}
-		}
-		
-		if(strstr(rec_rslt, "上一张"))
+		if(strstr(rec_rslt, "打开相册"))
 		{
 			//printf("rec_rslt = %s\n", rec_rslt);
-			face_flag = 1;
-			pic_flag = 0;
+			recv_client_data_sm = 0X01<<24;			//“显示相册”命令码
+			recv_client_data_sm |= 0X02<<16;			//进入“相册”画面,更新屏幕编号	
+			printf("recv_client_data_sm = %x\n", recv_client_data_sm);	
+			recv_client_data_flag = 1;		
 		}
-		
-		
+		else if(strstr(rec_rslt, "打开音乐"))
+		{
+			printf("rec_rslt = %s\n", rec_rslt);
+			recv_client_data_flag = 1;
+		}
+		else if(strstr(rec_rslt, "播放音乐"))
+		{
+			printf("rec_rslt = %s\n", rec_rslt);
+			recv_client_data_flag = 1;
+		}
+		else if(strstr(rec_rslt, "关闭音乐"))
+		{
+			printf("rec_rslt = %s\n", rec_rslt);
+			recv_client_data_flag = 1;
+		}						
+		else if(strstr(rec_rslt, "打开视频"))
+		{
+			printf("rec_rslt = %s\n", rec_rslt);
+			recv_client_data_flag = 1;
+		}				
+		else if(strstr(rec_rslt, "打开相机"))
+		{
+			printf("rec_rslt = %s\n", rec_rslt);
+			recv_client_data_flag = 1;
+		}
+		else
+		{
+			printf("无效输入\n");
+			recv_client_data_flag = 1;
+		}
+		*/			
 	}
 }
 

@@ -1,0 +1,33 @@
+============================================================
+Time  2021/07/06 18:29:33 873 
+============================================================
+[2021/07/06 18:29:33 874] isr_local  2211 os_type is:  Linux  
+[2021/07/06 18:29:33 875] isr_local  2220 SYS_MSG_LOAD_LOCAL  
+[2021/07/06 18:29:33 877] isr_local  2249 SYS_MSG_REGCB_LOCAL| param0 =  msp_status_cb  
+[2021/07/06 18:29:33 881] isr_local  2249 SYS_MSG_REGCB_LOCAL| param0 =  update_lex_cb  
+[2021/07/06 18:29:33 884] isr_local  2275 ASR_LOCAL_MSG_UPDATE_LEX  
+[2021/07/06 18:29:33 885] isr_local  1903 grm_init | params:  engine_type = local, text_encoding = UTF-8, 		asr_res_path = fo|res/asr/common.jet, sample_rate = 16000, 		grm_build_path = res/asr/GrmBuilld, grammar_list = cmd,   
+[2021/07/06 18:29:33 887] isr_local  805  engine_type  :  local  
+[2021/07/06 18:29:33 888] isr_local  805  text_encoding  :  UTF-8  
+[2021/07/06 18:29:33 889] isr_local  805  asr_res_path  :  fo|res/asr/common.jet  
+[2021/07/06 18:29:33 890] isr_local  805  sample_rate  :  16000  
+[2021/07/06 18:29:33 891] isr_local  805  grm_build_path  :  res/asr/GrmBuilld  
+[2021/07/06 18:29:33 892] isr_local  805  grammar_list  :  cmd  
+[2021/07/06 18:29:33 895] isr_local  1002 file count =   1  
+[2021/07/06 18:29:33 896] isr_local  925  file open type is:   fo  
+[2021/07/06 18:29:33 897] isr_local  958  res/asr/common.jet  0  0  
+[2021/07/06 18:29:33 898] isr_local  1020 speech_plus_setting  0  
+[2021/07/06 18:29:33 899] isr_local  1033 2  nil  res/asr/common.jet  0  0  
+[2021/07/06 18:29:33 901] isr_local  1035 res_ver  2  
+[2021/07/06 18:29:33 902] isr_local  1036 res 5  6b08cf1b68c811383d0a0ebad4f2c267  
+[2021/07/06 18:29:33 903] isr_local  1037 res_new_old_mark  v5pp  
+[2021/07/06 18:29:33 904] isr_local  1038 res_usr_name  ""  
+[2021/07/06 18:29:33 904] isr_local  1039 res_expires  1632640897  
+[2021/07/06 18:29:33 905] isr_local  1040 err  0  
+[2021/07/06 18:29:33 906] isr_local  1071 now expires:  1625621373  1632640897  
+[2021/07/06 18:29:33 915] isr_local  2284 update dict  
+[2021/07/06 18:29:33 918] isr_local  1760 contact  cmd  
+[2021/07/06 18:29:33 934] isr_local  1811 grm_list grm name:   cmd  
+[2021/07/06 18:29:33 936] isr_local  1644 proc_retcode_grm | errorcode =  0  
+[2021/07/06 18:29:33 955] isr_local  2022 grammar id:cmd  
+[2021/07/06 18:29:33 957] isr_local  1636 onGrmLocalServiceCb  0  cmd  
