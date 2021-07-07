@@ -8,5 +8,6 @@ void mplayer_pause();
 void mplayer_seek(int num);
 void mplayer_volume(int num);
 void mplayer_quit();
+void camera_cap();
 
 #endif

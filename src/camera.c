@@ -10,7 +10,9 @@
 #include "api_v4l2.h"
 #include "jpeglib.h"
 
-static struct jpg_data video_buf;//����ṹ�����
+
+#define JPG_PATH "./result.jpg"
+struct jpg_data video_buf;//����ṹ�����
 
 //��ʼ������ͷ
 void camera_init()
@@ -73,3 +75,32 @@ void camera_close()
 	add_node(camera_new,photo_list);						//插入新节点
 }
 */
+// 拍照
+void camera_cap()
+{
+	int tmp_fd = -1; 
+	// 如果文件不存在就创建并打开
+	tmp_fd = open(JPG_PATH, O_RDWR|O_CREAT, 0777);
+	if(tmp_fd < 0)
+	{
+		printf("open tmp_fd fail!\n");
+	}
+	printf("tmp_fd = %d\n", tmp_fd);
+
+	usleep(1000*100);
+	// 写入jpg数据
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+	
+	usleep(1000*100);
+	// printf("video_buf.jpg_size = %d\n", video_buf.jpg_size);
+	write(tmp_fd, video_buf.jpg_data, video_buf.jpg_size);
+	usleep(1000*10);
+	// lcd_draw_jpg
+	// 关闭图片文件
+	close(tmp_fd);
+}

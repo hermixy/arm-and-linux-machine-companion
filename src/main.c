@@ -482,7 +482,8 @@ static void AppTaskTouch(void )
 					switch(KEY)						//按键码分别处理
 					{
 						case	0:					//“相册”按钮
-
+								SM = 0x01<<24;
+								SM |= 0x07<<16;	
 								break;
 						case	1:					//“拍照”按钮
 								SM = 0x6b<<24;
@@ -493,7 +494,8 @@ static void AppTaskTouch(void )
 								SM |= 0x01<<16;	
 								break;
 						default:	
-
+								SM = 0x6a<<24;
+								SM |= 0x06<<16;	
 								break;
 					}	
 					break;
@@ -503,11 +505,13 @@ static void AppTaskTouch(void )
 					{					
 						case	0:					//“上一张”
 								printf("photo 0\n");
-
+								SM = 0x1a<<24;
+								SM |= 0x02<<16;	
 								break;
 						case	1:					//“下一张”			
 								printf("photo 1\n");			
-
+								SM = 0x1b<<24;
+								SM |= 0x02<<16;	
 								break;
 						case	2:					//“返回”
 								SM = 0X6a<<24;		//“显示相机”命令码
@@ -948,28 +952,63 @@ static void	AppTaskDisplay(void )
 					while(camera_show_flag == 0)
 					{								
 						camera_show(0,0);
-					}
-					camera_close(); 					// 关闭摄像头						
+					}				
 					if(my_get_touch_return == 2)		//返回
 					{
 						printf("there is my_get_touch_return\n");
 						//lcd_draw_jpg(0,0,"./background.jpg");	
 						Screen = 1;
 						my_get_touch_return = 0xff;
+						camera_close(); 					// 关闭摄像头	
 					}
 					if(my_get_touch_return == 1)		//拍照
 					{
-						printf("there is my_get_touch_return\n");
-						//lcd_draw_jpg(0,0,"./photo.jpg");	
-						Screen = 6;
-						my_get_touch_return = 0x01;
+						// 如果文件不存在就创建并打开	
+						memset(camera_jpg_cmd,0,sizeof(camera_jpg_cmd));
+						sprintf(camera_jpg_cmd,"%s/camera%d.jpg",cemera_photo_path,camera_photo_count);
+						tmp_fd = open(camera_jpg_cmd, O_RDWR|O_CREAT, 0777);
+						if(tmp_fd < 0)
+						{
+							printf("open tmp_fd fail!\n");
+						}
+						printf("tmp_fd = %d\n", tmp_fd);
+						
+						// 写入jpg数据
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
+						
+						// printf("video_buf.jpg_size = %d\n", video_buf.jpg_size);
+						write(tmp_fd, video_buf.jpg_data, video_buf.jpg_size);
+						// 关闭图片文件
+						close(tmp_fd);
+						memset(camera_jpg_name,0,sizeof(camera_jpg_name));
+						sprintf(camera_jpg_name,"camera%d.jpg",camera_photo_count++);
+						P_DOUBLE_NODE camera_new = new_node(camera_jpg_name);	//创建新节点		
+						add_node(camera_new,photo_list);						//插入新节点
+
+						camera_close(); 					// 关闭摄像头	
+
+						lcd_draw_jpg(0,0,camera_jpg_cmd);
+						lcd_draw_jpg(639,0,"./camera.jpg");	
+
+						usleep(1000*4000);
+	
+						Screen = 1;
+						my_get_touch_return = 0x04;
 					}						
 					if(my_get_touch_return == 0)		//相册
 					{
 						printf("there is my_get_touch_return\n");
 						lcd_draw_jpg(0,0,"./photo.jpg");	
+					//	usleep(1000*1000);
+						lcd_draw_jpg(0,0,camera_jpg_cmd);
 						Screen = 7;
 						my_get_touch_return = 0xff;
+						camera_close(); 					// 关闭摄像头	
 					}					
 					//ts_close();
 					memset(display_recive_msg.msg_sm, 0, 16);		
@@ -991,48 +1030,7 @@ static void	AppTaskDisplay(void )
 					printf("display_send_msg1:%x\n",display_send_msg.msg_sm[1]);						
 					break;
 			case	0x6b:								//拍照
-					// 如果文件不存在就创建并打开	
-					memset(camera_jpg_cmd,0,sizeof(camera_jpg_cmd));
-					sprintf(camera_jpg_cmd,"%s/camera%d.jpg",cemera_photo_path,camera_photo_count);
-					tmp_fd = open(camera_jpg_cmd, O_RDWR|O_CREAT, 0777);
-					if(tmp_fd < 0)
-					{
-						printf("open tmp_fd fail!\n");
-					}
-					printf("tmp_fd = %d\n", tmp_fd);
 					
-					// 写入jpg数据
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					linux_v4l2_get_yuyv_data(&video_buf);//获取摄像头捕捉的画面
-					
-					// printf("video_buf.jpg_size = %d\n", video_buf.jpg_size);
-					write(tmp_fd, video_buf.jpg_data, video_buf.jpg_size);
-					// 关闭图片文件
-					close(tmp_fd);
-					memset(camera_jpg_name,0,sizeof(camera_jpg_name));
-					sprintf(camera_jpg_name,"camera%d.jpg",camera_photo_count++);
-					P_DOUBLE_NODE camera_new = new_node(camera_jpg_name);	//创建新节点		
-					add_node(camera_new,photo_list);						//插入新节点
-
-					//lcd_draw_jpg(0,0,camera_jpg_cmd);
-					//while(ts_getxy(&X, &Y) == -1)
-					//{
-					//	;
-					//}
-					show_cartoon();
-					lcd_draw_jpg(639,0,"./camera.jpg");	
-					Screen = 1;
-					display_send_msg.msg_sm[0] = 0xff000000 + 4;
-					display_send_msg.msg_sm[1] = Screen;
-					if((msgsnd(display_send_qid,&display_send_msg,send_length,0)) < 0)
-					{
-						printf("display_send message posted\n");
-						exit(1);
-					}				
 					break;
 			case	0x6c:								//
 	
