@@ -868,6 +868,8 @@ static void	AppTaskDisplay(void )
 
 														//录音机界面预留
 			case	0x3a:								//录音开始
+					show_cartoon();
+					lcd_draw_jpg(0,0,"./recorder.jpg");	
 					socket_send_file();
 
 					char rec_rslt[1024] = {0};
@@ -1407,13 +1409,13 @@ void show_cartoon()//过场动画
 {
 	wait_load_flag = 1;
 	lcd_draw_jpg(0,0,"buffering1.jpg");
-	usleep(1000*10);
+	usleep(1000*5);
 	lcd_draw_jpg(0,0,"buffering2.jpg");
-	usleep(1000*10);
+	usleep(1000*5);
 	lcd_draw_jpg(0,0,"buffering3.jpg");
-	usleep(1000*10);
+	usleep(1000*5);
 	lcd_draw_jpg(0,0,"buffering4.jpg");
-	usleep(1000*10);
+	usleep(1000*5);
 	lcd_draw_jpg(0,0,"buffering1.jpg");
 	wait_load_flag = 0;
 }
