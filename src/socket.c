@@ -94,7 +94,7 @@ void socket_send_file()
 void socket_recv_ack(char *rec_rslt, int len)
 {
 	int ret = read(new_fd, rec_rslt, len); 
-	if(ret == 0) // 服务器退出了
+	if(ret == 0) // 客户端退出了
 	{
 		printf("客户端断开退出了\n");
 		client_status = 0;

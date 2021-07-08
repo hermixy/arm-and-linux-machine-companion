@@ -910,7 +910,7 @@ static void	AppTaskDisplay(void )
 					{
 						printf("无效输入\n");
 					}		
-
+					
 					usleep(1000*1000);
 					memset(display_recive_msg.msg_sm, 0, 16);		
 					if(msgrcv(display_recive_qid,(void *)&display_recive_msg,recv_length,(long)0,0) < 0)
