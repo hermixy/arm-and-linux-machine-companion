@@ -265,7 +265,11 @@ int run_asr(UserData *udata)
 		send_data(rec_rslt); // 将识别结果回发给开发板
 	}
 	else
+	{
+		send_data("识别失败\n"); // 将识别结果回发给开发板
 		printf("没有识别结果！\n");
+	}
+
 	printf("=============================================================\n");
 
 	goto run_exit;

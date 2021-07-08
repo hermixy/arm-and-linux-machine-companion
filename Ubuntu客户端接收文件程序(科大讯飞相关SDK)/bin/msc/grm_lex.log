@@ -357,3 +357,35 @@ Time  2021/07/07 08:10:04 395
 [2021/07/07 08:10:04 476] grm_lex    174  grammar_list  :  cmd  
 [2021/07/07 08:10:04 534] grm_lex    260  ISR_MSG_UPDATELEXICON ret =  0  
 [2021/07/07 08:10:04 953] grm_lex    71   0  cmd  
+============================================================
+Time  2021/07/07 18:28:00 213 
+============================================================
+[2021/07/07 18:28:00 214] grm_lex    264  SYS_MSG_LOAD  
+[2021/07/07 18:28:00 229] grm_lex    281  SYS_MSG_REGCB  
+[2021/07/07 18:28:00 236] grm_lex    267  SYS_MSG_UNLOAD  
+[2021/07/07 18:28:00 241] grm_lex    281  SYS_MSG_REGCB  
+[2021/07/07 18:28:00 247] grm_lex    251  ISR_MSG_BUILDGRAMMAR  
+[2021/07/07 18:28:00 249] grm_lex    100  grm_type :  bnf  
+[2021/07/07 18:28:00 250] grm_lex    106  engine_type  :  local  
+[2021/07/07 18:28:00 252] grm_lex    106  asr_res_path  :  fo|res/asr/common.jet  
+[2021/07/07 18:28:00 253] grm_lex    106  sample_rate  :  16000  
+[2021/07/07 18:28:00 255] grm_lex    106  grm_build_path  :  res/asr/GrmBuilld  
+[2021/07/07 18:28:00 282] grm_lex    254  ISR_MSG_BUILDGRAMMAR ret =  0  
+[2021/07/07 18:28:00 486] grm_lex    71   0  cmd  
+============================================================
+Time  2021/07/07 18:28:00 574 
+============================================================
+[2021/07/07 18:28:00 574] grm_lex    264  SYS_MSG_LOAD  
+[2021/07/07 18:28:00 578] grm_lex    281  SYS_MSG_REGCB  
+[2021/07/07 18:28:00 584] grm_lex    267  SYS_MSG_UNLOAD  
+[2021/07/07 18:28:00 592] grm_lex    281  SYS_MSG_REGCB  
+[2021/07/07 18:28:00 596] grm_lex    257  ISR_MSG_UPDATELEXICON  
+[2021/07/07 18:28:00 597] grm_lex    168  contact  16  
+[2021/07/07 18:28:00 599] grm_lex    174  engine_type  :  local  
+[2021/07/07 18:28:00 600] grm_lex    174  text_encoding  :  UTF-8  
+[2021/07/07 18:28:00 603] grm_lex    174  asr_res_path  :  fo|res/asr/common.jet  
+[2021/07/07 18:28:00 604] grm_lex    174  sample_rate  :  16000  
+[2021/07/07 18:28:00 606] grm_lex    174  grm_build_path  :  res/asr/GrmBuilld  
+[2021/07/07 18:28:00 607] grm_lex    174  grammar_list  :  cmd  
+[2021/07/07 18:28:00 643] grm_lex    260  ISR_MSG_UPDATELEXICON ret =  0  
+[2021/07/07 18:28:00 888] grm_lex    71   0  cmd  
