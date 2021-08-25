@@ -28,9 +28,9 @@ void socket_server_init(int port)
 	my_addr.sin_port = htons(port); //端口号
 	my_addr.sin_addr.s_addr = htonl(INADDR_ANY); //自动获取本机IP //inet_addr("192.168.1.20"); // INADDR_ANY
 	memset(my_addr.sin_zero,0,sizeof(my_addr.sin_zero));
-	int ret = bind(sockfd, (struct sockaddr *)&my_addr, sizeof(my_addr));
+	int ret = bind(sockfd, (struct sockaddr *)&my_addr, sizeof(my_addr));//绑定一个众所周知的地址
 	
-	listen(sockfd, 5); // 设置监听端口
+	listen(sockfd, 5); // 设置监听端口socket可以排队的最大连接个数
 }
 
 int socket_accept()
